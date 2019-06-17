@@ -60,15 +60,32 @@ public class SqliteInMemoryConnectionFactory : IDisposable
 }
 ```
 ```
-public class SqliteInMemoryDbContextFactory<TDbContext> : SqliteInMemoryConnectionFactory
+ public class SqliteInMemoryDbContextFactory<TDbContext> : SqliteInMemoryConnectionFactory
 	where TDbContext : DbContext
 {
-	private bool _created = false;
+	private readonly Action<String> _logger;
+	public SqliteInMemoryDbContextFactory()
+	{
 
+	}
+	public SqliteInMemoryDbContextFactory(Action<String> logger)
+	{
+		_logger = logger;
+	}
+
+	private ILoggerFactory CommandLoggerFactory(Action<string> logger)
+	 => new ServiceCollection().AddLogging(builder =>
+	 {
+		 builder.AddAction(logger).AddFilter(DbLoggerCategory.Database.Command.Name, LogLevel.Information);
+	 }).BuildServiceProvider()
+	 .GetService<ILoggerFactory>();
+
+	private bool _created = false;
 	private DbContextOptions<TDbContext> CreateOptions()
 	{
 		return new DbContextOptionsBuilder<TDbContext>()
 			.UseSqlite(_connection)
+			.UseLoggerFactory(CommandLoggerFactory(_logger))
 			.EnableSensitiveDataLogging()
 			.Options;
 	}
@@ -92,7 +109,7 @@ public class SqliteInMemoryDbContextFactory<TDbContext> : SqliteInMemoryConnecti
 }
 ```
 ```
- using (var factory = new SqliteInMemoryDbContextFactory<DND.Data.AppContext>())
+ using (var factory = new SqliteInMemoryDbContextFactory<DND.Data.AppContext>(log => _output.Writeline(log))
 {
 	using (var context = await factory.CreateContextAsync())
 	{
