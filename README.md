@@ -318,3 +318,6 @@ Ways to implement Authorization
 * BDD should not have any technical language
 * Imperative Style (Complex, Explicity specify data)
 * Declarative Style (Much simpler, Doesn't explicity specify data)
+
+## Pluralsight Courses
+* [Integration Testing ASP.NET Core Applications: Best Practices](https://app.pluralsight.com/library/courses/integration-testing-asp-dot-net-core-applications-best-practices/table-of-contents)
